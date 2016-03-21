@@ -1,0 +1,5 @@
+target=edu.nju.Alex.GreenDroid.Main
+classpath=F:/greeendroid/workspace2/GreenDroid for Android L/bin/;F:/androidstuff/TestForGreendroidVerisionTwo/app/build/intermediates/classes/debug;F:/greeendroid/classes5.0.jar
+sourcepath=F:/androidstuff/TestForGreendroidVersionOne/app/src/main/java
+listener+=edu.nju.Alex.GreenDroid.MethodInvocationListener
+jpf-core.native_classpath+=,F:/greeendroid/workspace2/GreenDroid for Android L/bin/;F:/greeendroid/classes5.0.jar;F:/androidstuff/TestForGreendroidVerisionTwo/app/build/intermediates/classes/debug
