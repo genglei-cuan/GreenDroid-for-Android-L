@@ -112,9 +112,9 @@ public class Main {
 					
 					//getting the choice;
 					int size = currentActicity.GUIComponentNumber;
-					//System.out.println("Size:"+size);
+				//	System.out.println("Size:"+size);
 					int choice =randGen.nextInt(size);
-					//System.out.println("choice: "+choice);
+				//	System.out.println("choice: "+choice);
 					//we reserve the first three elements in GUIComponentList to represent physical buttons: back, menu, and home
 					if(choice==0){
 						//click back
@@ -145,6 +145,7 @@ public class Main {
 						}
 						ApplicationStateLog.w(currentActicity.activity.toString()+"  Action: @menuBtn");
 						times++;
+						continue;
 					}
 					if(choice ==2 || choice ==3){
 						//home button is clicked and we just assume user switch right back to it, 'cause other apps matter not
@@ -160,10 +161,13 @@ public class Main {
 						stateMachine.decide(currentActicity,Events.SWITCHBACK_EVENT,isVisible);
 					    //appVisible=true;
 						times++;
+						continue;
 					}
 					if(choice==4){
 						//simulating external events, just in case
 						//fix it up later
+						times++;
+						continue;
 					}
 					if(choice>4){
 						//real GUI event
@@ -176,6 +180,7 @@ public class Main {
 						//System.out.println("GUI 4");
 						stateMachine.decide(currentActicity,Events.GUI_EVENT,choice);
 						times++;
+						continue;
 					}
 				}else{
 					//System.out.println("needs to switch back!");
@@ -209,8 +214,16 @@ public class Main {
 		activityStack.clear();
 		
 		//finish all services in the list and check
+		ApplicationStateLog.w("finish all services");
+		for(ServiceState ss : serviceList){
+				StateMachineForService.decide(ss, EventsForService.Destory, null);
+			}
+		serviceList.clear();
+		
 		
 		ApplicationStateLog.print();
+		//System.out.println("show's over!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\r\r\r\r\r\r\r\r\r\r");
+		return;
 	}
 	/**
 	 * This method checks if the currentActivity is actually currentActicity, and adjust
@@ -243,8 +256,8 @@ public class Main {
 		//Because once we see the invocation of setOnXXXListener(), we consider the GUI component is registered even when invoking setOnXXXListener(null)
 		//In fact this method runs in JPF's VM, so the ei here actually is regarded as android.widget.button etc... (not element info)
 		//System.out.println("Main: "+layoutId);
-		
 		//first we have to decide if the GUI component is from the activity or the fragment
+		//System.out.println(text);
 		if(currentActicity.layoutId!=layoutId){
 			for(FragmentState fs:currentActicity.fragmentList){
 				if(fs.layoutId==layoutId){
@@ -278,11 +291,19 @@ public class Main {
 				}
 			}
 		}
-		
+		//System.out.println(text);		
 		if(currentActicity!=null){
 			int index = currentActicity.registeredGUIComponentList.indexOf(ei);
 			Object o =null;
+			//System.out.println(text);
+			
+			/**
+			 * for some unknown reason, in AndTweet_bad after the cast of o the text becomes null.. god knows why..
+			 * so we copy it into backup for later use.
+			 */
+			String backup=String.copyValueOf(text.toCharArray());
 			if(index== -1){
+				//System.out.println(text);
 				//the gui is not registered
 				try {
 					//cast ei
@@ -291,15 +312,22 @@ public class Main {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				//System.out.println(text);
 				if(o!=null){
 					currentActicity.registeredGUIComponentList.add(o);
-					currentActicity.registeredGUIComponentText.add(text);
+					//System.out.println(backup);
+					currentActicity.registeredGUIComponentText.add(backup);
 					//System.out.println("Main: "+ei.getObjectRef());
 					ArrayList<Integer> events = new ArrayList<>();
 					//System.out.println("Main: "+GUIEventType);
 					events.add(GUIEventType);
 					
 					currentActicity.eventsList.add(events);
+					if(currentActicity.currentFragment!=null && currentActicity.currentFragment.registeredGUIComponentList!=null){
+						currentActicity.GUIComponentNumber=currentActicity.registeredGUIComponentList.size()+currentActicity.currentFragment.registeredGUIComponentList.size();
+					}else {
+						currentActicity.GUIComponentNumber=currentActicity.registeredGUIComponentList.size();
+					}
 					if(DEBUG){
 						System.out.println("[UI Element Registration] " + GUIElementType + " @" +currentActicity.activity.toString());
 					}
@@ -502,6 +530,7 @@ public class Main {
 		 }
 		// System.out.println(activityToFragment.size());
 	}
+	
 	/**
 	 * This method handles Activity.setContentView(int) API call 
 	 * also, we attach fragment to the activity
@@ -579,6 +608,7 @@ public class Main {
 			//compName.getClass() returns null, so we first get the ComponentName class and then get mClass field
  			Class cls = Class.forName("android.content.ComponentName");
  			Field field = cls.getDeclaredField("mClass");
+ 			field.setAccessible(true);
  			serviceName = field.get(compName).toString();
 		} catch (Exception e) {
 			System.out.println("[severe] cannot resolve service class");

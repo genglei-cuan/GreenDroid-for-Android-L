@@ -169,6 +169,7 @@ public class MethodInvocationListener extends ListenerAdapter{
 					
 					@Override
 					public void startElement(String nameSpaceURI, String localName, String qName, Attributes attrs){
+						//System.out.println("new!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 						//System.out.println("nameSpaceURI:"+ nameSpaceURI+" localName:"+localName+" qName:"+qName);
 						//System.out.println("gone?");
 						if(!"view".equals(qName)){
@@ -222,7 +223,7 @@ public class MethodInvocationListener extends ListenerAdapter{
 								if(attrs.getQName(i).equals("android:id")){
 									String value = attrs.getValue(i);
 									String id =value.substring(value.indexOf('/')+1);
-									//System.out.println(id+" "+value);
+								//	System.out.println(id+" "+value);
 									try {
 										if(this.id_cls!=null){
 											Field f =this.id_cls.getField(id);
@@ -242,7 +243,7 @@ public class MethodInvocationListener extends ListenerAdapter{
 								} else{
 									if(attrs.getQName(i).equals("android:text")){
 										String textId = attrs.getValue(i);
-										//System.out.println(textId);
+									//	System.out.println(textId);
 										if(textId.indexOf('/') == -1){
 											//the text is assigned directly
 											text=textId;
@@ -272,6 +273,7 @@ public class MethodInvocationListener extends ListenerAdapter{
 								
 								viewInfo.viewText=text;
 								viewInfoList.add(viewInfo);
+							//	System.out.println(viewInfo.viewText+" "+viewInfo.viewIdS);
 								viewId=-1;
 								type=text=null;
 							}
@@ -347,6 +349,8 @@ public class MethodInvocationListener extends ListenerAdapter{
 					File layoutFolder = new File(layoutDir);
 					File[] xmlList = layoutFolder.listFiles();
 					for(File f: xmlList){
+						//System.out.println("next!");
+						//System.out.println(f.getAbsolutePath());
 						if(f.getName().endsWith("xml")){
 							System.out.println("[Preprocessing] parsing " + layoutDir + "/" + f.getName());
 							layoutFileName = f.getName();
@@ -502,6 +506,7 @@ public class MethodInvocationListener extends ListenerAdapter{
 			String methodName = ((InstanceInvocation) executedInstruction).getInvokedMethodName();
 			//System.out.println("                                                                after the execution? "+className+"."+methodName);
 			ElementInfo ei = ((InstanceInvocation) executedInstruction).getThisElementInfo(currentThread);
+		//	System.out.println(currentThread.getTopFrame().getPrevious().getMethodName());
 			//System.out.println(((InstanceInvocation) executedInstruction).getInvokedMethodClassName()+"."+methodName)
 			//test
 			if(Main.DEBUG){
@@ -2067,9 +2072,9 @@ public class MethodInvocationListener extends ListenerAdapter{
 				Object[] args = ((INVOKEVIRTUAL) executedInstruction).getArgumentValues(currentThread);
 				if(args!= null && args.length == 0){
 					
-					MethodInfo handleWakeLockAcquisition = ciMain.getMethod("handleWakeLockAcquistion(Ljava/lang/Object;)V", false);
+					MethodInfo handleWakeLockAcquisition = ciMain.getMethod("handleWakeLockAcquisition(Ljava/lang/Object;)V", false);
 					if(handleWakeLockAcquisition == null){
-						throw new JPFException("no handleWakeLockAcquistion method in edu.nju.Alex.greendroid.Main class");
+						throw new JPFException("no handleWakeLockAcquisition method in edu.nju.Alex.greendroid.Main class");
 					}
 					
 					//create direct call stub
@@ -2641,8 +2646,20 @@ public class MethodInvocationListener extends ListenerAdapter{
 		}
 		//for now, we don't deal with sofia or concurrency yet
 	}
-	
-		
+		/*if(!Main.ENABLE_CONCURRENCY){
+			Instruction nextInsn=executedInstruction.getNext();
+			if(nextInsn instanceof InstanceInvocation){
+				String mClsName = ((InstanceInvocation) nextInsn).getInvokedMethodClassName();
+				String mName = ((InstanceInvocation) nextInsn).getInvokedMethodName();
+				if("java.lang.Thread".equals(mClsName) && mName.equals(TargetMethodList.THREAD_START)){
+					//currentThread.pop();
+					currentThread.advancePC();
+					currentThread.advancePC();
+					currentThread.executeInstruction();
+					}
+				}
+		}
+		*/
 	if(executedInstruction instanceof INVOKESTATIC){
 		StaticElementInfo sei = ((INVOKESTATIC) executedInstruction).getStaticElementInfo();
 		String methodName = ((INVOKESTATIC) executedInstruction).getInvokedClassName();
@@ -2668,7 +2685,7 @@ public class MethodInvocationListener extends ListenerAdapter{
 		/**
 		 * This following code is very important for avoiding null pointer exception!!!
 		 */
-		//System.out.println(instructionToExecute.toString()+" "+instructionToExecute.getFileLocation());
+		//System.out.println(instructionToExecute.toString()+" "+instructionToExecute.getFileLocation()+" "+instructionToExecute.getSourceLine());
 		//when invoke setOnClickListener, at one point Handler will be initialized and would require mLooper.Queue, which somehow not existed. so we manually create one. don't know if it would work yet.
 		if (instructionToExecute instanceof GETFIELD) {
 			String ins=instructionToExecute.toString();
@@ -2691,12 +2708,13 @@ public class MethodInvocationListener extends ListenerAdapter{
 			ElementInfo ei = ((InstanceInvocation) instructionToExecute).getThisElementInfo(currentThread);
 			String className = ((InstanceInvocation) instructionToExecute).getInvokedMethodClassName();
 			String MethodName = ((InstanceInvocation) instructionToExecute).getInvokedMethodName();
-			//System.out.println("                                                                before the execution? "+className+"."+((InstanceInvocation) instructionToExecute).getInvokedMethodName());
+			if (className.indexOf("com.xorcode.andtweet")!=-1 || className.indexOf("GreenDroid")!=-1) 	
+			System.out.println("                                                                before the execution? "+className+"."+((InstanceInvocation) instructionToExecute).getInvokedMethodName()+" "+instructionToExecute.getFileLocation());
 			ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(className);
-			
+			//System.out.println(currentThread.getTopFrame().getMethodName());
 			
 			//redirect some methods to child classes
-			if(RedirectTargets.CCOS.equals(MethodName)){
+			if(RedirectTargets.CCOS.equals(MethodName) && "android.content.Context".equals(className)){
 				//System.out.println(className+" "+MethodName);
 				((InstanceInvocation) instructionToExecute).setInvokedMethod("android.content.ContextWrapper", "checkCallingOrSelfPermission", "(Ljava/lang/String;)I");
 				ci = ClassLoaderInfo.getCurrentResolvedClassInfo("android.content.ContextWrapper");
@@ -2704,7 +2722,7 @@ public class MethodInvocationListener extends ListenerAdapter{
 					ei=null;
 				}
 			}
-			if (RedirectTargets.GML.equals(MethodName)) {
+			if (RedirectTargets.GML.equals(MethodName) && "android.content.Context".equals(className)) {
 				//System.out.println(className+" "+MethodName);
 				((InstanceInvocation) instructionToExecute).setInvokedMethod("android.content.ContextWrapper", "getMainLooper", "()Landroid/os/Looper;");
 				ci = ClassLoaderInfo.getCurrentResolvedClassInfo("android.content.ContextWrapper");
@@ -2715,7 +2733,7 @@ public class MethodInvocationListener extends ListenerAdapter{
 					ei=null;
 				}
 			}
-			if (RedirectTargets.GBPN.equals(MethodName)) {
+			if (RedirectTargets.GBPN.equals(MethodName) && "android.content.Context".equals(className)) {
 			//	System.out.println(className+" "+MethodName);
 				((InstanceInvocation) instructionToExecute).setInvokedMethod("android.content.ContextWrapper", "getBasePackageName", "()Ljava/lang/String;");
 				ci = ClassLoaderInfo.getCurrentResolvedClassInfo("android.content.ContextWrapper");
@@ -2723,8 +2741,110 @@ public class MethodInvocationListener extends ListenerAdapter{
 					ei=null;
 				}
 			}
+			if (RedirectTargets.GPN.equals(MethodName) && "android.content.Context".equals(className)) {
+				((InstanceInvocation) instructionToExecute).setInvokedMethod("android.content.ContextWrapper", "getPackageName", "()Ljava/lang/String;");
+				ci = ClassLoaderInfo.getCurrentResolvedClassInfo("android.content.ContextWrapper");
+				if(ei!=null && !ei.instanceOf("Landroid.content.ContextWrapper;")){
+					ei=null;
+				}
+			}
 			
+			if (RedirectTargets.GAI.equals(MethodName)  && "android.content.Context".equals(className)) {
+				((InstanceInvocation) instructionToExecute).setInvokedMethod("android.content.ContextWrapper", "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
+				ci = ClassLoaderInfo.getCurrentResolvedClassInfo("android.content.ContextWrapper");
+				if(ei!=null && !ei.instanceOf("Landroid.content.ContextWrapper;")){
+					ei=null;
+				}
+			}
 			
+			/**
+			*some of the classes and interfaces, for unknown reasons (I'm guessing interfaces and abstract classes), can't be directed to the peers. 
+			*so, as an alternative, we establish a package containing mocked implemented classes and redirect those problemetic ones to them.
+			*/
+			//handle SharedPerference.getString       
+			if (RedirectTargets.SPGS.equals(MethodName) && ("android.content.SharedPreferences".equals(className) || "edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference".equals(className))) {
+				//System.out.println(className+" "+MethodName);
+				((InstanceInvocation) instructionToExecute).setInvokedMethod("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference","getString","(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+				ci=ClassLoaderInfo.getCurrentResolvedClassInfo("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference");
+				if (ei!=null && !ei.instanceOf("Ledu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference;")) {
+					ei=null;
+				}
+			}
+			
+			//handle SharedPerference.getBoolean
+			if (RedirectTargets.SPGB.equals(MethodName) && ("android.content.SharedPreferences".equals(className) || "edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference".equals(className))) {
+				//System.out.println(className+" "+MethodName);
+				((InstanceInvocation) instructionToExecute).setInvokedMethod("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference","getBoolean","(Ljava/lang/String;Z)Z");
+				ci=ClassLoaderInfo.getCurrentResolvedClassInfo("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference");
+				if (ei!=null && !ei.instanceOf("Ledu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference;")) {
+					ei=null;
+				}
+			}
+			
+			//handle SharedPerference.contains
+			if (RedirectTargets.SPC.equals(MethodName) && ("android.content.SharedPreferences".equals(className) || "edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference".equals(className))) {
+				//System.out.println(className+" "+MethodName);
+				((InstanceInvocation) instructionToExecute).setInvokedMethod("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference","contains","(Ljava/lang/String;)Z");
+				ci=ClassLoaderInfo.getCurrentResolvedClassInfo("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference");
+				if (ei!=null && !ei.instanceOf("Ledu.nju.Alex.GreenDroid.ForcedRedirectedPeers.SharedPerference;")) {
+					ei=null;
+				}
+			}
+			
+			//handle Window.setFeatureInt
+			if (RedirectTargets.WSF.equals(MethodName) && ("android.view.Window".equals(className) ||"edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Window".equals(className) )) {
+				((InstanceInvocation) instructionToExecute).setInvokedMethod("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Window","setFeatureInt","(II)V");
+				ci=ClassLoaderInfo.getCurrentResolvedClassInfo("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Window");
+				if (ei!=null && !ei.instanceOf("Ledu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Window;")) {
+					ei=null;
+				}
+			}
+			
+			//handle  android.database.Cursor.getColumnIndexOrThrow
+			if (RedirectTargets.GCIOT.equals(MethodName) && ("android.database.Cursor".equals(className) || "edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor".equals(className))) {
+				((InstanceInvocation) instructionToExecute).setInvokedMethod("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor","getColumnIndexOrThrow","(Ljava/lang/String;)I");
+				ci=ClassLoaderInfo.getCurrentResolvedClassInfo("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor");
+				if (ei!=null && !ei.instanceOf("Ledu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor;")) {
+					ei=null;
+				}
+			}
+			
+			//handle  android.database.Cursor.registerContentObserver
+			if (RedirectTargets.RCO.equals(MethodName) && ("android.database.Cursor".equals(className) || "edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor".equals(className))) {
+				((InstanceInvocation) instructionToExecute).setInvokedMethod("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor","registerContentObserver","(Landroid/database/ContentObserver;)V");
+				ci=ClassLoaderInfo.getCurrentResolvedClassInfo("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor");
+				if (ei!=null && !ei.instanceOf("Ledu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor;")) {
+					ei=null;
+				}
+			}
+			
+			//handle  android.database.Cursor.registerDataSetObserver
+			if (RedirectTargets.RDSO.equals(MethodName) && ("android.database.Cursor".equals(className) || "edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor".equals(className))) {
+				((InstanceInvocation) instructionToExecute).setInvokedMethod("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor","registerDataSetObserver","(Landroid/database/DataSetObserver;)V");
+				ci=ClassLoaderInfo.getCurrentResolvedClassInfo("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor");
+				if (ei!=null && !ei.instanceOf("Ledu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor;")) {
+					ei=null;
+				}
+			}
+			
+			//handle  android.database.Cursor.isClosed
+			if (RedirectTargets.CIC.equals(MethodName) && ("android.database.Cursor".equals(className) || "edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor".equals(className))) {
+				((InstanceInvocation) instructionToExecute).setInvokedMethod("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor","isClosed","()Z");
+				ci=ClassLoaderInfo.getCurrentResolvedClassInfo("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor");
+				if (ei!=null && !ei.instanceOf("Ledu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor;")) {
+					ei=null;
+				}
+			}
+			
+			//handle  android.database.Cursor.close
+			if (RedirectTargets.CC.equals(MethodName) && ("android.database.Cursor".equals(className) || "edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor".equals(className))) {
+				((InstanceInvocation) instructionToExecute).setInvokedMethod("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor","close","()V");
+				ci=ClassLoaderInfo.getCurrentResolvedClassInfo("edu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor");
+				if (ei!=null && !ei.instanceOf("Ledu.nju.Alex.GreenDroid.ForcedRedirectedPeers.Cursor;")) {
+					ei=null;
+				}
+			}
+
 			//sometimes some variables are declared using interface
 			//e.g., List<Type> list = new ArrayList<Type>();
 			if (!ci.isInterface() && !ci.isEnum()) {
@@ -2737,8 +2857,10 @@ public class MethodInvocationListener extends ListenerAdapter{
 						int ref = currentThread.getHeap().newObject(ci, currentThread).getIndex();
 						//directly manipulate the operand stack
 						int thisOffset = ((InstanceInvocation) instructionToExecute).getArgSize()-1;
-						//System.out.println(currentThread.getTopFrameMethodInfo().getName()+" "+ref+" "+thisOffset);
+						//System.out.println("               "+((InstanceInvocation) instructionToExecute).getArgSize()+Redirect+" "+currentThread.getTopFrameMethodInfo().getName()+" "+ref+" "+thisOffset);
 						currentThread.getTopFrame().setOperand(thisOffset, ref, true);
+						//ElementInfo ei1 = ((InstanceInvocation) instructionToExecute).getThisElementInfo(currentThread);
+						
 					} catch (Exception e) {
 						e.printStackTrace(System.err);
 					}
@@ -2827,10 +2949,12 @@ public class MethodInvocationListener extends ListenerAdapter{
 		String sTrans = s.replace('/', '.');
 	//	System.out.println("sTrans "+sTrans);
 		ElementInfo type = vm.getHeap().newString(sTrans, currentThread);
+		
+		
 		frame.pushRef(type.getObjectRef());
 		frame.push(guiEventType);
 		String tString=getGUIElementText(ei.getObjectRef());
-		//System.out.println(tString);
+	//	System.out.println(tString);
 		ElementInfo text=vm.getHeap().newString(tString, currentThread);
 		frame.push(text.getObjectRef());
 		frame.push(layoutId);
@@ -2928,6 +3052,7 @@ public class MethodInvocationListener extends ListenerAdapter{
 	 */
 	public static String getGUIElementText(int objRef) {
 		for(MyMap m :viewInfoList){
+		//	System.out.println(m.viewText+" "+m.viewIdS+" "+m.objRef+" "+objRef);
 			if (m.objRef==objRef) {
 				if(m.viewText!=null){
 					return m.viewText;

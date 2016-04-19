@@ -1,0 +1,5 @@
+target=edu.nju.Alex.GreenDroid.Main
+classpath=F:/greeendroid/workspace2/GreenDroid for Android L/bin/;F:/greeendroid/workspace2/AndTweet-bad/bin/classes;F:/greeendroid/classes5.0.jar;F:/greeendroid/useful-jars/java-json.jar;F:/greeendroid/useful-jars/httpclient-4.1.1.jar;F:/greeendroid/useful-jars/httpcore-4.1.jar;F:/greeendroid/useful-jars/commons-logging-1.1.1.jar;F:/greeendroid/useful-jars/log4j-1.2.17.jar
+sourcepath=F:/greeendroid/workspace2/AndTweet-bad/src
+listener+=edu.nju.Alex.GreenDroid.MethodInvocationListener
+jpf-core.native_classpath+=,F:/greeendroid/workspace2/GreenDroid for Android L/bin/;F:/greeendroid/classes5.0.jar;F:/greeendroid/workspace2/AndTweet-bad/bin/classes
