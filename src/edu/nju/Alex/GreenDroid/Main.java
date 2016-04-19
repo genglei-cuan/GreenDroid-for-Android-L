@@ -788,6 +788,7 @@ public class Main {
 			//compName.getClass() returns null, so we first get the ComponentName class and then get mClass field
 			Class cls = Class.forName("android.content.ComponentName");
 			Field field = cls.getDeclaredField("mClass");
+			field.setAccessible(true);
 			serviceName = field.get(compName).toString();
 		} catch (Exception e) {
 			e.printStackTrace();

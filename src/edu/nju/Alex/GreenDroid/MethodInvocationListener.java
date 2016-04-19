@@ -1905,7 +1905,9 @@ public class MethodInvocationListener extends ListenerAdapter{
 		if(methodName.equals(TargetMethodList.REG_LOC_LISTENER)){
 			if(ei !=null && ei.instanceOf("Landroid.location.LocationManager;")){
 				Object[] args = ((INVOKEVIRTUAL) executedInstruction).getArgumentValues(currentThread);
+				//System.out.println((args!= null && args.length == 4));
 				if(args!= null && args.length == 4){
+					//System.out.println("whar?");
 					ElementInfo providerEi = (ElementInfo) args[0];
 					Long minTimeEi = (Long) args[1];
 					Float minDistEi = (Float) args[2];
@@ -1975,11 +1977,11 @@ public class MethodInvocationListener extends ListenerAdapter{
 					frame.pushRef(listenerEi.getObjectRef());
 					currentThread.pushFrame(frame);
 					currentThread.executeInstruction();
-					//return;
+					return;
 				}else{
 					throw new JPFException("requestLocationUpdates should have 4 arguments");
 				}
-				return;
+				//return;
 			}
 		}
 		
@@ -1987,25 +1989,22 @@ public class MethodInvocationListener extends ListenerAdapter{
 		if(methodName.equals(TargetMethodList.UNREG_LOC_LISTENER)){
 			if(ei !=null && ei.instanceOf("Landroid.location.LocationManager;")){
 				Object[] args = ((INVOKEVIRTUAL) executedInstruction).getArgumentValues(currentThread);
-				if(args!= null && args.length == 4){
-					ElementInfo providerEi = (ElementInfo) args[0];
-					Long minTimeEi = (Long) args[1];
-					Float minDistEi = (Float) args[2];
-					ElementInfo listenerEi = (ElementInfo) args[3];
+				if(args!= null && args.length == 1){
+					ElementInfo listenerEi = (ElementInfo) args[0];
 					
-					MethodInfo regListener = ciMain.getMethod("registerLocListener(Ljava/lang/Object;JDLjava/lang/Object;)V", false);
-					if(regListener == null){
+					MethodInfo unregListener = ciMain.getMethod("unregisterLocListener(Ljava/lang/Object;)V", false);
+					if(unregListener == null){
 						throw new JPFException("no registerLocListener method in edu.nju.Alex.greendroid.Main class");
 					}
 					
 					//create direct call stub
-					int maxLocals = regListener.getMaxLocals();
-					int maxStack=regListener.getNumberOfCallerStackSlots();
-					MethodInfo stub = new MethodInfo(regListener, maxLocals,maxStack);
-					ClassInfo ci=regListener.getClassInfo();
+					int maxLocals = unregListener.getMaxLocals();
+					int maxStack=unregListener.getNumberOfCallerStackSlots();
+					MethodInfo stub = new MethodInfo(unregListener, maxLocals,maxStack);
+					ClassInfo ci=unregListener.getClassInfo();
 					ArrayList<Instruction> a=new ArrayList<Instruction>();
 					InstructionFactory instructionFactory=new InstructionFactory();
-					a.add(instructionFactory.invokevirtual(ci.getName(), regListener.getName(), regListener.getSignature()));
+					a.add(instructionFactory.invokevirtual(ci.getName(), unregListener.getName(), unregListener.getSignature()));
 					a.add(instructionFactory.directcallreturn());
 					stub.setCode(a.toArray(new Instruction[a.size()]));
 					DirectCallStackFrame frame = new DirectCallStackFrame(stub,null) {
@@ -2047,19 +2046,13 @@ public class MethodInvocationListener extends ListenerAdapter{
 						}
 					};
 					//don't know still the same, check later
-					if(providerEi == null){
-						frame.pushRef(MJIEnv.NULL);
-					}else{
-						frame.pushRef(providerEi.getObjectRef());
-					}
-					frame.pushLong(minTimeEi.longValue());
-					frame.pushDouble(minDistEi.doubleValue());
+	
 					frame.pushRef(listenerEi.getObjectRef());
 					currentThread.pushFrame(frame);
 					currentThread.executeInstruction();
 					//return;
 				}else{
-					throw new JPFException("requestLocationUpdates should have 4 arguments");
+					throw new JPFException("RemoveUpdates should have 1 arguments");
 				}
 				return;
 			}
@@ -2646,7 +2639,7 @@ public class MethodInvocationListener extends ListenerAdapter{
 		}
 		//for now, we don't deal with sofia or concurrency yet
 	}
-		/*if(!Main.ENABLE_CONCURRENCY){
+		if(!Main.ENABLE_CONCURRENCY){
 			Instruction nextInsn=executedInstruction.getNext();
 			if(nextInsn instanceof InstanceInvocation){
 				String mClsName = ((InstanceInvocation) nextInsn).getInvokedMethodClassName();
@@ -2659,7 +2652,7 @@ public class MethodInvocationListener extends ListenerAdapter{
 					}
 				}
 		}
-		*/
+		
 	if(executedInstruction instanceof INVOKESTATIC){
 		StaticElementInfo sei = ((INVOKESTATIC) executedInstruction).getStaticElementInfo();
 		String methodName = ((INVOKESTATIC) executedInstruction).getInvokedClassName();
@@ -2708,8 +2701,8 @@ public class MethodInvocationListener extends ListenerAdapter{
 			ElementInfo ei = ((InstanceInvocation) instructionToExecute).getThisElementInfo(currentThread);
 			String className = ((InstanceInvocation) instructionToExecute).getInvokedMethodClassName();
 			String MethodName = ((InstanceInvocation) instructionToExecute).getInvokedMethodName();
-			if (className.indexOf("com.xorcode.andtweet")!=-1 || className.indexOf("GreenDroid")!=-1) 	
-			System.out.println("                                                                before the execution? "+className+"."+((InstanceInvocation) instructionToExecute).getInvokedMethodName()+" "+instructionToExecute.getFileLocation());
+			//if (className.indexOf("com.xorcode.andtweet")!=-1 || className.indexOf("GreenDroid")!=-1) 	
+			//System.out.println("                                                                before the execution? "+className+"."+((InstanceInvocation) instructionToExecute).getInvokedMethodName()+" "+instructionToExecute.getFileLocation());
 			ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(className);
 			//System.out.println(currentThread.getTopFrame().getMethodName());
 			

@@ -13,9 +13,10 @@ public class Config {
 		public static String STR_PATH;//="F:/androidstuff/TestForGreendroidVerisionTwo/app/src/main/res/values/strings.xml"; 
 		public static String MANIFEST_PATH;//="F:/androidstuff/TestForGreendroidVerisionTwo/app/src/main/AndroidManifest.xml";
 		
-		public static int SUB_ID=1;
+		public static int SUB_ID=2;
 		public static final int TESTVERSION = 0;
 		public static final int ANDTWEET_BAD = 1;
+		public static final int GPSLOGGER=2;
 		
 		static{
 			switch (SUB_ID) {
@@ -37,6 +38,15 @@ public class Config {
 				STR_PATH = "F:/greeendroid/workspace2/AndTweet-bad/res/values/strings.xml";
 				MANIFEST_PATH = "F:/greeendroid/workspace2/AndTweet-bad/AndroidManifest.xml";
 				
+				break;
+			case GPSLOGGER:
+				ENTRY_ACTIVITY = "com.prom2m.android.gpslogger.GPSLoggerActivity";
+				R_ID_Class = "com.prom2m.android.gpslogger.R$id";
+				R_LAYOUT_Class = "com.prom2m.android.gpslogger.R$layout";
+				PKGNAME = "com.prom2m.android.gpslogger";
+				LAYOUT_PATH = "F:/greeendroid/workspace2/GPSLogger-r15/res/layout";
+				STR_PATH = "F:/greeendroid/workspace2/GPSLogger-r15/res/values/strings.xml";
+				MANIFEST_PATH = "F:/greeendroid/workspace2/GPSLogger-r15/AndroidManifest.xml";
 				break;
 			default:
 				break;

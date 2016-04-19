@@ -1,0 +1,3 @@
+target=test.TestCG
+classpath=F:/greeendroid/workspace2/GreenDroid for Android L/bin/
+cg.enumerate_random=true

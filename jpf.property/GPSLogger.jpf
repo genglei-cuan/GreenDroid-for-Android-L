@@ -1,0 +1,6 @@
+target=edu.nju.Alex.GreenDroid.Main
+classpath=F:/greeendroid/workspace2/GreenDroid for Android L/bin/;F:/greeendroid/workspace2/GPSLogger-r15/bin/classes;F:/greeendroid/classes5.0.jar
+sourcepath=F:/greeendroid/workspace2/GPSLogger-r15/src
+listener+=edu.nju.Alex.GreenDroid.MethodInvocationListener
+jpf-core.native_classpath+=,F:/greeendroid/workspace2/GreenDroid for Android L/bin/;F:/greeendroid/classes5.0.jar;F:/greeendroid/workspace2/GPSLogger-r15/bin/classes
+cg.enumerate_random=true
